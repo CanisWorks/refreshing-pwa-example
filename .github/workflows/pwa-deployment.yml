@@ -17,7 +17,7 @@ jobs:
       - id: next_version
         uses: zwaldowski/semver-release-action@v3
         with:
-          bump: ${{ steps.run_tests.outputs.match }}
+          bump: ${{ steps.match_version.outputs.match }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-latest
