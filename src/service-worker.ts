@@ -16,6 +16,7 @@ import { StaleWhileRevalidate } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const appVersion = process.env.REACT_APP_VERSION_ID || 'development';
 
 clientsClaim();
