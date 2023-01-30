@@ -53,10 +53,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.build.outputs.artifact_name }}
-          path: ./
-      - run: pwd && ls -la 
-      - name: unzip artifact
-        run: unzip ${{ needs.build.outputs.artifact_name }} -d ./artifact
+          path: ./artifact
       - name: replace config file
         run: mv ./artifact/env-config/prod.config.js ./artifact/config.js
       - name: remove extra config files
