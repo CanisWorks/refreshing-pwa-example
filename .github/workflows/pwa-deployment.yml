@@ -22,6 +22,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: [version-app]
+    env:
+      ARTIFACT_NAME: build_rc_${{ needs.version-app.outputs.next_version }}
+    outputs:
+      artifact_name: ${{ env.ARTIFACT_NAME }}
     steps:
       - uses: actions/checkout@v3
       - name: setup nodejs
@@ -35,5 +39,32 @@ jobs:
       - name: archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: build_rc_${{ needs.version-app.outputs.next_version }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: build
+  deploy_prod:
+    runs-on: ubuntu-latest
+    needs: [build]
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+      - name: unzip artifact
+        run: unzip ${{ needs.build.outputs.artifact_name }} -d ./artifact
+      - name: replace config file
+        run: mv ./artifact/env-config/prod.config.js ./artifact/config.js
+      - name: remove extra config files
+        run: rm -rf ./artifact/env-config
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: publish to S3
+        run: aws s3 sync ./public/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+
+  
