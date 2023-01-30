@@ -58,7 +58,6 @@ jobs:
         run: mv ./artifact/env-config/prod.config.js ./artifact/config.js
       - name: remove extra config files
         run: rm -rf ./artifact/env-config
-      - uses: actions/checkout@v3
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
