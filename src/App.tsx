@@ -7,9 +7,11 @@ export default function App() {
   
   const location = useLocation();
   React.useEffect(() => {
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.update();
-    });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.update();
+      });
+    }
   }, [location]);
 
   return (
