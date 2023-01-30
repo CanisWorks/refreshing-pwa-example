@@ -35,10 +35,10 @@ export class S3HostingStack extends Stack {
       assumedBy: new WebIdentityPrincipal(props.OIDCProviderArn, {
         StringEquals: {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-          'token.actions.githubusercontent.com:sub': [
+          /*'token.actions.githubusercontent.com:sub': [
             'repo:CanisWorks/refreshing-pwa-example:push',
             'repo:CanisWorks/refreshing-pwa-example:ref:refs/heads/main',
-          ],
+          ],*/
         },
       }),
     });
