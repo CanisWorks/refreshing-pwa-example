@@ -54,6 +54,7 @@ jobs:
         with:
           name: ${{ needs.build.outputs.artifact_name }}
           path: ./
+      - run: pwd && ls -la 
       - name: unzip artifact
         run: unzip ${{ needs.build.outputs.artifact_name }} -d ./artifact
       - name: replace config file
