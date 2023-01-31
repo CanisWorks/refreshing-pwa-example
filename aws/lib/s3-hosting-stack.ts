@@ -1,6 +1,7 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
-import { Effect, PolicyStatement, Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
-import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { CloudFrontWebDistribution, OriginAccessIdentity, PriceClass } from 'aws-cdk-lib/aws-cloudfront';
+import { ArnPrincipal, Effect, PolicyStatement, Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
+import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
 export interface S3HostingStackProps extends StackProps {
@@ -15,9 +16,8 @@ export class S3HostingStack extends Stack {
       bucketName: 'www-cw-example-pwa',
       encryption: BucketEncryption.S3_MANAGED,
       removalPolicy: RemovalPolicy.DESTROY,
-      publicReadAccess: true,
-      websiteErrorDocument: 'index.html',
-      websiteIndexDocument: 'index.html',
+      accessControl: BucketAccessControl.PRIVATE,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
     new CfnOutput(this, 'bucketName', {
@@ -26,6 +26,51 @@ export class S3HostingStack extends Stack {
     new CfnOutput(this, 'bucketDomain', {
       value: s3Bucket.bucketDomainName,
     });
+
+    // cloudfront cdn required for a https domain.
+    const cfOAI = new OriginAccessIdentity(this, 'cfOAI', {
+      comment: 'CF access to S3 bucket origin',
+    });
+
+    const cfDistribution = new CloudFrontWebDistribution(this, 'cfDistribution', {
+      originConfigs: [{
+        s3OriginSource: {
+          s3BucketSource: s3Bucket,
+          originAccessIdentity: cfOAI,
+        },
+        behaviors : [ { isDefaultBehavior: true,  }],
+      }],
+      errorConfigurations: [
+        {
+          errorCode: 403,
+          responseCode: 200,
+          responsePagePath: '/index.html',
+          errorCachingMinTtl: 10,
+        },
+      ],
+      priceClass: PriceClass.PRICE_CLASS_100,
+      comment: 'example pwa app',
+    });
+
+    new CfnOutput(this, 'cfDomainName', { value: cfDistribution.distributionDomainName });
+
+    // CF access policy to S3
+    const bucketPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        's3:GetObject',
+        's3:ListBucket',
+        's3:GetBucketLocation',
+      ],
+      resources: [
+        s3Bucket.bucketArn,
+        `${s3Bucket.bucketArn}/*`,
+      ],
+    });
+    bucketPolicy.addCanonicalUserPrincipal(
+      cfOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId,
+    );
+    s3Bucket.addToResourcePolicy(bucketPolicy);
 
     // IAM role for github actions IODC provider (used in the actions pipeline instead of user access keys).
     const deployRole = new Role(this, 'githubDeployRole', {
