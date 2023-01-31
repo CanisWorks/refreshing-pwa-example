@@ -65,5 +65,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: publish to S3
         run: aws s3 sync ./artifact/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+      - name: invalidate cloudfront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRO_ID }} --paths "/*"
 
   

@@ -102,7 +102,17 @@ export class S3HostingStack extends Stack {
         `${s3Bucket.bucketArn}/*`,
       ],
     });
+    const cfInvalidationPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        'cloudfront:CreateInvalidation',
+        'cloudfront:GetInvalidation',
+        'cloudfront:ListInvalidations',
+      ],
+      resources: ['*'],
+    });
     deployRole.addToPolicy(pushToBucketPolicy);
+    deployRole.addToPolicy(cfInvalidationPolicy);
 
     new CfnOutput(this, 'deployRoleArn', {
       value: deployRole.roleArn,
