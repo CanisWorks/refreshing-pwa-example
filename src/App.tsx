@@ -9,6 +9,7 @@ export default function App() {
   React.useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
+        console.log('calling sw update');
         registration.update();
       });
     }
