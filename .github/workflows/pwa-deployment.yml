@@ -64,6 +64,6 @@ jobs:
           role-to-assume: ${{ secrets.DEPLOY_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: publish to S3
-        run: aws s3 sync ./artifact/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --acl public-read
+        run: aws s3 sync ./artifact/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
   
