@@ -1,22 +1,27 @@
-import React from 'react';
-import { Routes, Route, Outlet, Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Outlet, Link } from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
 
-export default function App() {
-  
-  const location = useLocation();
-  React.useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.update();
-      });
-    }
-  }, [location]);
+interface AppProps {
+  appUpdatePending: boolean;
+  updateAction: () => void;
+}
+
+export default function App(props: AppProps) {
+  const { appUpdatePending, updateAction } = props;
+  const [showUpdateBtn, setShowUpdateBtn] = useState(appUpdatePending);
+
+  useEffect(() => {
+    setShowUpdateBtn(appUpdatePending);
+  }, [appUpdatePending]);
 
   return (
     <div className="App">
       <header className="App-header">
+        { showUpdateBtn ? 
+            <Button label="Click to Update" action={() => updateAction()}/> : null
+        }
         <img src={logo} className="App-logo" alt="logo" />
         <p>
           This is a PWA!
@@ -37,6 +42,13 @@ export default function App() {
         </p>
       </footer>
     </div>
+  );
+}
+
+function Button({ label = '', action = () => {}}) {
+  const onClick = () => action();
+  return (
+    <button className="Update-btn" onClick={onClick}>{label}</button>
   );
 }
 
