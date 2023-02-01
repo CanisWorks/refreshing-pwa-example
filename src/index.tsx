@@ -19,7 +19,7 @@ const withSwRegistration = (WrappedComp: FC<WrappedCompProps>, ) => {
     const onSWUpdate = () => {
       setAppUpdatePending(!appUpdatePending);
     }
-    // action for updating the sw
+    // action for updating the service worker.
     const updateAction = () => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then((registration) => {
@@ -46,7 +46,7 @@ const withSwRegistration = (WrappedComp: FC<WrappedCompProps>, ) => {
         });
       }
     }, [location]);
-    
+
     // registers the service worker based on config setting.
     if (window.REACT_APP_REGISTER_SW === true) {
       serviceWorkerRegistration.register({ onUpdate: onSWUpdate });
